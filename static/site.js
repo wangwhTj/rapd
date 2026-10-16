@@ -25,7 +25,7 @@ let galleryPaused = false;
 let galleryHovered = false;
 let galleryDragging = false;
 let galleryOpener;
-let galleryImageRequest = 0;
+const resolutionGallery = new window.ResolutionGallery(galleryViewer, galleryLarge);
 let galleryPosition = galleryTrack.scrollLeft;
 let galleryLastWritten = galleryTrack.scrollLeft;
 let galleryLastFrame;
@@ -69,15 +69,10 @@ function animateGallery(timestamp) {
   galleryOpener = button;
   const thumbnail = button.querySelector('img');
   galleryLarge.src = thumbnail.getAttribute('src');
-  const request = ++galleryImageRequest;
-  const fullImage = new Image();
-  fullImage.onload = () => {
-    if (request === galleryImageRequest && galleryViewer.open) galleryLarge.src = fullImage.src;
-  };
-  fullImage.src = thumbnail.dataset.full;
   galleryLarge.alt = thumbnail.alt;
   galleryPrompt.textContent = button.dataset.prompt;
   galleryViewer.showModal();
+  resolutionGallery.open(thumbnail.dataset.full);
   document.body.classList.add('gallery-modal-open');
 }));
 document.getElementById('gallery-close').addEventListener('click', () => galleryViewer.close());
@@ -88,7 +83,7 @@ galleryViewer.addEventListener('click', event => {
       event.clientY < bounds.top || event.clientY > bounds.bottom) galleryViewer.close();
 });
 galleryViewer.addEventListener('close', () => {
-  galleryImageRequest++;
+  resolutionGallery.close();
   document.body.classList.remove('gallery-modal-open');
   galleryLarge.removeAttribute('src');
   galleryPrompt.textContent = '';
