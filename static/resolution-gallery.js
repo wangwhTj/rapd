@@ -1,4 +1,4 @@
-/* Resize-only previews: selected resolution is never presented as a model render. */
+/* Resolution gallery controls and on-demand asset loading. */
 class ResolutionGallery {
   constructor(dialog, image) {
     this.dialog = dialog;
