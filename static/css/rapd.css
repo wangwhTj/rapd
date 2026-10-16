@@ -35,3 +35,7 @@ body.gallery-modal-open{overflow:hidden}
 
 /* Center the decoder comparison at 80% of the content width. */
 .paper-figure[src="assets/fig2.png"]{width:80%;margin-inline:auto}
+
+.author-email{display:inline-block;white-space:nowrap;font-size:13px;vertical-align:middle}
+.tldr{text-align:center;padding-bottom:12px}
+.tldr.reading p{text-align:center}
