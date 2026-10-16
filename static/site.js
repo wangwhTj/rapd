@@ -25,6 +25,7 @@ let galleryPaused = false;
 let galleryHovered = false;
 let galleryDragging = false;
 let galleryOpener;
+let galleryImageRequest = 0;
 let galleryPosition = galleryTrack.scrollLeft;
 let galleryLastWritten = galleryTrack.scrollLeft;
 let galleryLastFrame;
@@ -38,6 +39,16 @@ const galleryClones = galleryItems.map(button => {
   galleryTrack.appendChild(clone);
   return clone;
 });
+
+// Fetch small previews one viewport ahead of the scrolling track.
+const galleryPreviewObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+    entry.target.loading = 'eager';
+    galleryPreviewObserver.unobserve(entry.target);
+  });
+}, {root: galleryTrack, rootMargin: '0px 100%'});
+galleryTrack.querySelectorAll('img').forEach(img => galleryPreviewObserver.observe(img));
 
 function animateGallery(timestamp) {
   const elapsed = galleryLastFrame === undefined ? 0 : Math.min(timestamp - galleryLastFrame, 100);
@@ -58,6 +69,12 @@ function animateGallery(timestamp) {
   galleryOpener = button;
   const thumbnail = button.querySelector('img');
   galleryLarge.src = thumbnail.getAttribute('src');
+  const request = ++galleryImageRequest;
+  const fullImage = new Image();
+  fullImage.onload = () => {
+    if (request === galleryImageRequest && galleryViewer.open) galleryLarge.src = fullImage.src;
+  };
+  fullImage.src = thumbnail.dataset.full;
   galleryLarge.alt = thumbnail.alt;
   galleryPrompt.textContent = button.dataset.prompt;
   galleryViewer.showModal();
@@ -71,6 +88,7 @@ galleryViewer.addEventListener('click', event => {
       event.clientY < bounds.top || event.clientY > bounds.bottom) galleryViewer.close();
 });
 galleryViewer.addEventListener('close', () => {
+  galleryImageRequest++;
   document.body.classList.remove('gallery-modal-open');
   galleryLarge.removeAttribute('src');
   galleryPrompt.textContent = '';
