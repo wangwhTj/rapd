@@ -40,5 +40,20 @@ body.gallery-modal-open{overflow:hidden}
 .tldr{text-align:center;padding-bottom:12px}
 .tldr.reading p{text-align:center}
 
-/* Bring the opening figure closer to the publication links. */
-#figure-1{margin-top:10px}
+/* Tighten the title and opening figure spacing. */
+.hero.publication-header{padding-top:12px;padding-bottom:4px}
+.hero .publication-title{margin-top:8px}
+.hero .publication-links{margin-bottom:6px}
+#figure-1{margin-top:4px}
+
+/* Publication button icons and the pending code release. */
+.publication-links .button{display:inline-flex;align-items:center;justify-content:center;gap:7px;font-family:inherit;line-height:inherit;white-space:nowrap}
+.button-icon{width:18px;height:18px;flex-shrink:0}
+.publication-links .code-placeholder{cursor:default}
+.publication-links .code-placeholder:hover{transform:none}
+@media(max-width:480px){.publication-links{flex-wrap:wrap}}
+
+/* Place the acceptance note in the existing title margin without shifting content. */
+.hero .publication-title{position:relative}
+.hero .publication-title .acceptance-note{position:absolute;top:100%;left:0;right:0;margin-top:6px;color:var(--orange);font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:500;line-height:16px;letter-spacing:0;white-space:nowrap}
+@media(max-width:768px){.hero .publication-title .acceptance-note{margin-top:3px;font-size:11px;line-height:14px}}
