@@ -35,7 +35,7 @@ RaPD performs diffusion in a continuous **Neural Image Field (NIF)** latent spac
 ## Release Status
 
 - [x] Release the SFT T2I model and inference demo.
-- [ ] Release training and inference code.
+- [x] Release training and inference code.
 
 ## Installation
 
