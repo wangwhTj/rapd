@@ -1,0 +1,19 @@
+# Install a matching CUDA-enabled torch / torchvision pair for your GPU first.
+# Dependency list extracted from source; not a tested version lock.
+torch
+torchvision
+numpy
+Pillow
+PyYAML
+omegaconf
+diffusers
+transformers
+timm
+accelerate
+webdataset
+tensorboard
+einops
+lpips
+tqdm
+scipy
+opencv-python-headless

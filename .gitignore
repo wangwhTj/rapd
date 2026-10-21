@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+.venv/
+.DS_Store
+datasets/
+pretrained_weights/
+checkpoints_final/
+rapd_work_dir_lucky/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+events.out.tfevents.*
+rapd/
+pretrain_weights/

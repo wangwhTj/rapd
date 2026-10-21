@@ -1,0 +1,102 @@
+# Inference only. Run from the remote project root:
+# CUDA_VISIBLE_DEVICES=0 python3 main.py predict -c configs_t2i/inference.yaml
+# predict: bundled DPG prompts, one image per prompt (not a single-prompt demo).
+# Override data.pred_dataset.init_args.prompt_path to use your own .txt directory.
+# validate: bundled GenEval metadata; generates samples, not metric scores.
+# Inference loads only the selected denoiser, CQAR AE and Qwen3.
+seed_everything: 42
+tags:
+  exp: rapd_sft_512_inference
+torch_hub_dir: ./pretrain_weights/torch_hub
+huggingface_cache_dir: null
+ckpt_path: ./pretrain_weights/rapd_sft_512.ckpt
+pos_embed_load_policy: drop
+
+trainer:
+  default_root_dir: ./inference_outputs
+  predict_subdir: predict
+  callbacks:
+    - class_path: src.callbacks.save_images.SaveImagesHook
+      init_args:
+        save_dir: samples
+
+model:
+  ae_ckpt: ./pretrain_weights/ae.pt
+  decode_size: 512
+  inference_dtype: bf16
+  eval_original_model: false  # Use EMA weights from the SFT checkpoint.
+  decode_overscan_pad: 8
+
+  ae:
+    class_path: src.models.autoencoder.cqar_ae.CQARAutoencoder
+    init_args:
+      feat_channels: 16
+      hidden: 256
+      stats_path: ./pretrain_weights/ae_stats_res512.pt
+      ae_ckpt: ./pretrain_weights/ae.pt
+      renderer_block_type: window_attention
+      renderer_num_blocks: 4
+      renderer_num_heads: 4
+      renderer_ffn_expansion_factor: 2.0
+      renderer_window_size: 8
+
+  denoiser:
+    class_path: src.models.transformer.JiT_T2I.JiT_T2I
+    init_args:
+      in_channels: 16
+      patch_size: 16
+      input_size: 512
+      hidden_size: &hidden_dim 1536
+      num_blocks: 16
+      num_groups: 24
+      txt_embed_dim: &txt_embed_dim 2048
+      txt_max_length: 128
+      bottleneck_dim: 1024
+      num_text_blocks: 4
+      gated_attn: true
+
+  conditioner:
+    class_path: src.models.conditioner.qwen3_text_encoder.Qwen3TextEncoder
+    init_args:
+      weight_path: ./pretrain_weights/Qwen3-1.7B
+      embed_dim: *txt_embed_dim
+      max_length: 128
+
+  diffusion_sampler:
+    class_path: src.diffusion.flow_matching.sampling.EulerSamplerJiT
+    init_args:
+      num_steps: 50
+      guidance: 4.0
+      scheduler: src.diffusion.flow_matching.scheduling.LinearScheduler
+      w_scheduler: src.diffusion.flow_matching.scheduling.LinearScheduler
+      guidance_fn: src.diffusion.base.guidance.simple_guidance_fn
+      step_fn: src.diffusion.flow_matching.sampling.ode_step_fn
+      timeshift: 32.0
+
+
+data:
+  eval_dataset:
+    class_path: src.data.dataset.geneval.GenEvalDataset
+    init_args:
+      meta_json_path: ./evaluations/geneval/evaluation_metadata.jsonl
+      num_samples_per_instance: 1
+      latent_shape:
+        - 16
+        - 512
+        - 512
+
+  pred_dataset:
+    class_path: src.data.dataset.dpg.DPGDataset
+    init_args:
+      seed: 42
+      prompt_path: ./evaluations/dpg/prompts
+      num_samples_per_instance: 1
+      latent_shape:
+        - 16
+        - 512
+        - 512
+
+  eval_batch_size: 1
+  eval_num_workers: 0
+  pred_batch_size: 1
+  pred_num_workers: 0
